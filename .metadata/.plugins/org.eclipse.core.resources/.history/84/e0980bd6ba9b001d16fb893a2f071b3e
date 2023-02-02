@@ -1,0 +1,5 @@
+package com.rightdata.demo.service;
+
+public class ConnectionService {
+
+}

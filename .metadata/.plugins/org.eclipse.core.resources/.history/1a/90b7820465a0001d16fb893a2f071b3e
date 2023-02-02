@@ -1,0 +1,44 @@
+package com.rightdata.demo.controller;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.rightdata.demo.entity.ConnectionDetails;
+import com.rightdata.demo.service.ConnectionService;
+
+@RestController
+@RequestMapping("/task")
+public class ConnectionController {
+
+	@Autowired
+	ConnectionService cs;
+
+	@PostMapping("/connect")
+	public ResponseEntity<String> connectToDb(@RequestBody ConnectionDetails cd) {
+
+		String response = cs.getConnection(cd);
+		if (response == "connected to DataBase")
+			return new ResponseEntity<String>(response, HttpStatus.OK);
+		else
+			return new ResponseEntity<String>(response, HttpStatus.NOT_FOUND);
+
+	}
+
+//	public ResponseEntity<List<String>> getlistofCatalog(@RequestBody ConnectionDetails cd) {
+//		String response=
+//
+//	}
+
+}

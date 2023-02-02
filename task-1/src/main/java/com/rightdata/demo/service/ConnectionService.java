@@ -1,0 +1,185 @@
+package com.rightdata.demo.service;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.rightdata.demo.common.CC;
+import com.rightdata.demo.entity.ConnectionDetails;
+import com.rightdata.demo.entity.TableDescription;
+import com.rightdata.demo.entity.TableType;
+
+//#1
+
+@Service
+public class ConnectionService {
+
+	public Connection getConnection(ConnectionDetails cd) {
+		Connection con = CC.getConnection(cd);
+		return con;
+
+	}
+
+//#2
+	public List<String> getCatalogs(ConnectionDetails cd) {
+		List<String> catalogs = new ArrayList<>();
+		Connection con = CC.getConnection(cd);
+		try {
+			ResultSet rs = con.createStatement().executeQuery("select name from sys.databases");
+			while (rs.next()) {
+				catalogs.add(rs.getString(1));
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return catalogs;
+	}
+
+//#3
+	public List<String> getSchemas(ConnectionDetails cd, String catalog) {
+		List<String> schemas = new ArrayList<>();
+		Connection con = CC.getConnection(cd);
+		try {
+			ResultSet rs = con.createStatement().executeQuery("select name from " + catalog + ".sys.schemas");
+			while (rs.next()) {
+				schemas.add(rs.getString(1));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return schemas;
+	}
+
+//#4
+	public List<String> getViewsAndTables(ConnectionDetails cd, String catalog, String schema) {
+		List<String> viewsandtables = new ArrayList<>();
+		Connection con = CC.getConnection(cd);
+		try {
+			ResultSet rs = con.createStatement()
+					.executeQuery("USE " + catalog
+							+ ";SELECT TABLE_NAME, TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='"
+							+ schema + "' ");
+			while (rs.next()) {
+				viewsandtables.add(rs.getString(1));
+				viewsandtables.add(rs.getString(2));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return viewsandtables;
+	}
+
+//#5
+	public List<TableDescription> getTableDescription(ConnectionDetails cd, String catalog, String schema,
+			String table) {
+		List<TableDescription> tableDescList = new ArrayList<>();
+		try {
+			Connection connection = CC.getConnection(cd);
+			PreparedStatement statement = connection
+					.prepareStatement("use " + catalog + "; " + CC.GET_DESCRIPTION_QUERY);
+			table = schema + "." + table;
+			statement.setString(1, table);
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				TableDescription td = new TableDescription();
+				td.setColumnName(resultSet.getString("COLUMN_NAME"));
+				td.setDataType(resultSet.getString("DATA_TYPE"));
+				td.setPrecision(resultSet.getInt("PRECISION"));
+				td.setMaxlength(resultSet.getInt("MAX_LENGTH"));
+				td.setIsNullable(resultSet.getInt("IS_NULLABLE"));
+				td.setPrimaryKey(resultSet.getInt("PRIMARY_KEY"));
+				tableDescList.add(td);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return tableDescList;
+	}
+//#6
+	public List<List<Object>> getTableData(ConnectionDetails cd, String query) {
+		List<List<Object>> rows = new ArrayList<>();
+		try {
+			Connection con = CC.getConnection(cd);
+			Statement statement = con.createStatement();
+			ResultSet resultSet = statement.executeQuery(query);
+			ResultSetMetaData meta = resultSet.getMetaData();
+			int columnCount = meta.getColumnCount();
+			while (resultSet.next()) {
+
+				List<Object> row = new ArrayList<>();
+				for (int i = 1; i <= columnCount; i++) {
+
+					String columnName = meta.getColumnName(i);
+					String columnType = meta.getColumnTypeName(i);
+					switch (columnType) {
+					case "varchar": {
+						row.add(columnName + " : " + resultSet.getString(columnName));
+						break;
+					}
+					case "float": {
+						row.add(columnName + " : " + resultSet.getFloat(columnName));
+						break;
+					}
+					case "boolean": {
+						row.add(columnName + " : " + resultSet.getBoolean(columnName));
+						break;
+					}
+					case "int": {
+						row.add(columnName + " : " + resultSet.getInt(columnName));
+						break;
+					}
+					case "timestamp": {
+						row.add(columnName + " : " + resultSet.getTimestamp(columnName));
+						break;
+					}
+					case "decimal": {
+						row.add(columnName + " : " + resultSet.getBigDecimal(columnName));
+						break;
+					}
+					case "date": {
+						row.add(columnName + " : " + resultSet.getDate(columnName));
+						break;
+					}
+					default:
+						row.add("!-!-! " + columnName + " : " + resultSet.getObject(columnName));
+						System.out.println("Datatype Not available for Column: " + columnName);
+					}
+				}
+				rows.add(row);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return rows;
+	}
+//		#7
+
+	public List<TableType> getTablesAndViewsByPattern(ConnectionDetails cd, String catalog, String pattern) {
+		List<TableType> viewsAndTables = new ArrayList<>();
+		try {
+			Connection connection = CC.getConnection(cd);
+			PreparedStatement statement = connection
+					.prepareStatement("use " + catalog + "; " + CC.GET_TABLES_BY_PATTERN_QUERY);
+			statement.setString(1, pattern);
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+				TableType tableType = new TableType();
+				tableType.setTable_name(resultSet.getString("TABLE_NAME"));
+				tableType.setTable_type(resultSet.getString("TABLE_TYPE"));
+				viewsAndTables.add(tableType);
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return viewsAndTables;
+	}
+
+}

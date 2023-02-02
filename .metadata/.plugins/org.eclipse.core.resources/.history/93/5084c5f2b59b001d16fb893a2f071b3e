@@ -1,0 +1,5 @@
+package com.rightdata.demo.controller;
+
+public class ConnectionController {
+
+}

@@ -1,0 +1,105 @@
+package com.rightdata.demo.service;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.xml.catalog.Catalog;
+
+import org.springframework.stereotype.Service;
+
+import com.rightdata.demo.common.CC;
+import com.rightdata.demo.entity.ConnectionDetails;
+import com.rightdata.demo.entity.TableDescription;
+
+//#1
+
+@Service
+public class ConnectionService {
+
+	public Connection getConnection(ConnectionDetails cd) {
+		Connection con = CC.getConnection(cd);
+		return con;
+
+	}
+
+//#2
+	public List<String> getCatalogs(ConnectionDetails cd) {
+		List<String> catalogs = new ArrayList<>();
+		Connection con = CC.getConnection(cd);
+		try {
+			ResultSet rs = con.createStatement().executeQuery("select name from sys.databases");
+			while (rs.next()) {
+				catalogs.add(rs.getString(1));
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return catalogs;
+	}
+
+//#3
+	public List<String> getSchemas(ConnectionDetails cd, String catalog) {
+		List<String> schemas = new ArrayList<>();
+		Connection con = CC.getConnection(cd);
+		try {
+			ResultSet rs = con.createStatement().executeQuery("select name from " + catalog + ".sys.schemas");
+			while (rs.next()) {
+				schemas.add(rs.getString(1));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return schemas;
+	}
+
+//#4
+	public List<String> getViewsAndTables(ConnectionDetails cd, String catalog, String schema) {
+		List<String> viewsandtables = new ArrayList<>();
+		Connection con = CC.getConnection(cd);
+		try {
+			ResultSet rs = con.createStatement()
+					.executeQuery("USE " + catalog
+							+ ";SELECT TABLE_NAME, TABLE_TYPE FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='"
+							+ schema + "' ");
+			while (rs.next()) {
+				viewsandtables.add(rs.getString(1));
+				viewsandtables.add(rs.getString(2));
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		return viewsandtables;
+	}
+
+	public List<TableDescription> getTableDescription(ConnectionDetails details, String catalog, String schema,
+			String table) {
+			 List<TableDescription> tableDescList = new ArrayList<>();
+			try {
+			 Connection connection = CC.getConnection(details);
+			 PreparedStatement statement = connection.prepareStatement("use " + catalog + "; " + CC.GET_DESCRIPTION_QUERY);
+			 table = schema + "." + table;
+			statement.setString(1, table);
+			ResultSet resultSet = statement.executeQuery();
+			while (resultSet.next()) {
+			TableDescription td = new TableDescription();
+			td.setColumnName(resultSet.getString("COLUMN_NAME"));
+			 td.setDataType(resultSet.getString("DATA_TYPE"));
+			 td.setPrecision(resultSet.getInt("PRECISION"));
+			 td.setMaxlength(resultSet.getInt("MAX_LENGTH"));
+			 td.setIsNullable(resultSet.getInt("IS_NULLABLE"));
+			 td.setPrimaryKey(resultSet.getInt("PRIMARY_KEY"));
+			 tableDescList.add(td);
+			}
+			        } catch (Exception e) {
+			 e.printStackTrace();
+			}
+				return tableDescList;
+	}
+
+}

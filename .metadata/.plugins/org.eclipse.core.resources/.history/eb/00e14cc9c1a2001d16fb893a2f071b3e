@@ -1,0 +1,5 @@
+package com.rightdata.demo.entity;
+
+public class RequestBodyQuery {
+
+}

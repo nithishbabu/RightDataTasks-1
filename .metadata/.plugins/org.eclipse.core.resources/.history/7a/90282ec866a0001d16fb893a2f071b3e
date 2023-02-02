@@ -1,0 +1,32 @@
+package com.rightdata.demo.service;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
+import com.rightdata.demo.common.CC;
+import com.rightdata.demo.entity.ConnectionDetails;
+
+@Service
+public class ConnectionService {
+
+	public Connection getConnection(ConnectionDetails cd) {
+		Connection con=CC.getConnection(cd);
+		return con;
+		
+		
+		
+		
+	}
+//	public List<String>getCatalogs(ConnectionDetails cd){
+//		List<String> catalogs=new ArrayList<>();
+//		Connection con=cd.getConnection()
+//		
+//	}
+
+	
+}

@@ -1,0 +1,32 @@
+package com.rightdata.demo.entity;
+
+public class RequestBodyPattern {
+
+	private ConnectionDetails details;
+	private String pattern;
+	private String catalog;
+
+	public ConnectionDetails getDetails() {
+		return details;
+	}
+
+	public void setDetails(ConnectionDetails details) {
+		this.details = details;
+	}
+
+	public String getPattern() {
+		return pattern;
+	}
+
+	public void setPattern(String pattern) {
+		this.pattern = pattern;
+	}
+
+	public String getCatalog() {
+		return catalog;
+	}
+
+	public void setCatalog(String catalog) {
+		this.catalog = catalog;
+	}
+}

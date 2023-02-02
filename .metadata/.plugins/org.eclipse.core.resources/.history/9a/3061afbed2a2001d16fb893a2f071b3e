@@ -1,0 +1,24 @@
+package com.rightdata.demo.entity;
+
+public class RequestBodyQuery {
+
+	private ConnectionDetails cd;
+	private String query;
+
+	public ConnectionDetails getDetails() {
+		return cd;
+	}
+
+	public void setDetails(ConnectionDetails details) {
+		this.cd = details;
+	}
+
+	public String getQuery() {
+		return query;
+	}
+
+	public void setQuery(String query) {
+		this.query = query;
+	}
+
+}

@@ -1,0 +1,29 @@
+package com.rightdata.demo.service;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Service;
+
+import com.rightdata.demo.entity.ConnectionDetails;
+
+@Service
+public class ConnectionService {
+
+	public String getConnection(ConnectionDetails cd) {
+		try {
+			Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
+			Connection con=DriverManager.getConnection(cd.getUrl(), cd.getUsername(), cd.getPassword());
+			return "connected to DB";
+			
+		} catch (ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+			return "connection to db failed";
+		}
+	}
+
+	
+}
